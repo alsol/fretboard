@@ -9,6 +9,7 @@ const modes = ['Major', 'Minor']
 
 let state = {
     root: notes[0],
+    highlightTriads: false,
     tuning: GUITAR_TUNINGS.default,
     mode: modes[0],
     stringWidth: () => range(state.tuning.length)
@@ -48,19 +49,39 @@ function updateFretboard(newState) {
         root: state.root,
         type: state.mode.toLowerCase(),
     }).style({
-        text: ({note}) => note,
         fontSize: 10
-    }).style({
+    })
+
+    if (!state.highlightTriads) {
+        fretboard.style({
+            text: ({note}) => note,
+        })
+        return
+    }
+
+    let majorTriads = new Set(['1P', '3M', '3m', '5P'])
+
+    fretboard.style({
         filter: {interval: '1P'},
+        text: () => '1P',
         fill: '#e76f51'
     }).style({
         filter: {interval: '3' + (state.mode == 'Major' ? 'M' : 'm')},
+        text: () => '3' + (state.mode == 'Major' ? 'M' : 'm'),
         fill: "#F29727"
     }).style({
         filter: {interval: "5P"},
-        fill: '#D89D6A'
+        text: () => '5P',
+        fill: '#D89D6A',
+    }).style({
+        filter: ({interval}) => !majorTriads.has(interval),
+        opacity: 0.5
     })
 }
+
+document.getElementById('highlight-triads').addEventListener('change', (ev) => {
+    updateFretboard({highlightTriads: (ev.target as HTMLInputElement).checked})
+})
 
 const $rootNoteControl = document.getElementById("root-note")
 const $modeControl = document.getElementById("mode")
