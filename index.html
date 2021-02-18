@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fretboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <main>
+        <section class="mt-6 container" id="scales">
+            <div class="tuning columns has-text-centered"></div>
+            <div class="columns is-centered">
+                <figure class="column is-four-fifths" id="fretboard"></figure>
+                <aside class="column aside form-wrapper">
+                    <form>
+                        <div class="field">
+                            <label for="root-note">Root Note</label>
+                            <div class="control">
+                                <div class="select is-small">
+                                    <select name="root" id="root-note">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="mode">Mode</label>
+                            <div class="control">
+                                <div class="select is-small">
+                                    <select name="mode" id="mode">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </aside>
+            </div>
+        </section>
+        <script src="main.js"></script>
+    </main>
+</body>
+</html>
