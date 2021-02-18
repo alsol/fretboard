@@ -1,4 +1,5 @@
-import {Fretboard, GUITAR_TUNINGS} from '@moonwave99/fretboard.js';
+import {Fretboard} from '@moonwave99/fretboard.js';
+import {instruments} from "./tuning";
 
 require('./fretboard.scss');
 
@@ -10,40 +11,66 @@ const modes = ['Major', 'Minor']
 let state = {
     root: notes[0],
     highlightTriads: false,
-    tuning: GUITAR_TUNINGS.default,
+    instrument: instruments[0],
+    tuning: instruments[0].tunings[0],
     mode: modes[0],
-    stringWidth: () => range(state.tuning.length)
+    stringWidth: () => range(state.tuning.strings.length)
         .map((v, index) => index > 0 ? v * 0.5 : 0.5)
         .map((v) => v > 2 ? 2 : v)
 }
 
-const $wrapper = document.getElementById('scales')
-$wrapper.querySelector(".tuning").innerHTML = state.tuning
-    .map((note) => {
-        return `
-        <span class="column">${note}</span> 
-        `
+let fretboard: Fretboard
+
+let $tuningControl = document.getElementById("tuning-select")
+
+function updateTuningControl(newState) {
+    state = {
+        ...state,
+        ...newState
+    }
+
+    const $clone = $tuningControl.cloneNode(true)
+    $tuningControl.parentNode.replaceChild($clone, $tuningControl)
+    $tuningControl = ($clone as HTMLInputElement)
+
+    $tuningControl.innerHTML = state.instrument.tunings
+        .map((tuning) => {
+            const title = tuning.title
+            return `
+            <option value="${title}" ${tuning === state.tuning ? 'selected' : ''}>${title}</option>
+            `
+        })
+        .join('');
+
+    ($tuningControl as HTMLInputElement).disabled = state.instrument.tunings.length == 1
+
+    $tuningControl.addEventListener('change', el => {
+        const selectedItem = (el.target as HTMLInputElement).value;
+        const selectedTuning = state.instrument.tunings.find(tuning => tuning.title === selectedItem)
+        updateFretboard({tuning: selectedTuning})
     })
-    .join('')
 
-
-const fretboard = new Fretboard({
-    el: '#fretboard',
-    dotFill: 'white',
-    fretCount: 16,
-    tuning: state.tuning,
-    stringCount: state.tuning.length,
-    font: 'Nunito',
-    middleFretColor: '#666',
-    stringWidth: state.stringWidth()
-});
-
+    updateFretboard({})
+}
 
 function updateFretboard(newState) {
     state = {
         ...state,
         ...newState
     }
+
+    document.getElementById("fretboard").innerHTML = ''
+
+    fretboard = new Fretboard({
+        el: '#fretboard',
+        dotFill: 'white',
+        fretCount: 16,
+        tuning: state.tuning.strings,
+        stringCount: state.tuning.strings.length,
+        font: 'Nunito',
+        middleFretColor: '#666',
+        stringWidth: state.stringWidth()
+    });
 
     fretboard.renderScale({
         root: state.root,
@@ -83,8 +110,24 @@ document.getElementById('highlight-triads').addEventListener('change', (ev) => {
     updateFretboard({highlightTriads: (ev.target as HTMLInputElement).checked})
 })
 
+const $instrumentControl = document.getElementById("instrument-select")
 const $rootNoteControl = document.getElementById("root-note")
 const $modeControl = document.getElementById("mode")
+
+$instrumentControl.innerHTML = instruments
+    .map((instrument) => {
+        const title = instrument.title.toLowerCase()
+        return `
+        <option value="${title}" ${state.instrument === instrument ? 'selected' : ''}>${title}</option>
+        `
+    })
+    .join('')
+
+$instrumentControl.addEventListener('change', ev => {
+    const selectedItem = (ev.target as HTMLInputElement).value
+    const selectedInstrument = instruments.find(inst => inst.title.toLowerCase() === selectedItem)
+    updateTuningControl({instrument: selectedInstrument, tuning: selectedInstrument.tunings[0]})
+})
 
 $rootNoteControl.innerHTML = notes
     .map((note) => {
@@ -110,5 +153,4 @@ $modeControl.addEventListener('change', (ev) => {
     updateFretboard({mode: (ev.target as HTMLTextAreaElement).value})
 })
 
-updateFretboard({})
-
+updateTuningControl({})
