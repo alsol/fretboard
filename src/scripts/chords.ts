@@ -53,9 +53,8 @@ export function renderChord(chord: Chord, system: FretboardSystem): string {
 
             const interval = value === 'R' ? '1' : value
 
-            return rootScale.find(position => {
-                return position.string === index && position.interval.startsWith(interval)
-            })?.fret ?? 'x'
+            return rootScale.filter(position => position.string == index)
+                .find(position => position.interval.startsWith(interval))?.fret ?? 'x'
         }).join('')
 }
 
