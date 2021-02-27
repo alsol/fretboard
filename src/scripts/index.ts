@@ -5,7 +5,7 @@ require('./fretboard.scss');
 
 const range = n => Array.from({length: n}, (value, key) => key)
 
-const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].filter(note => !note.endsWith("#"))
 const modes = ['Major', 'Minor']
 
 let state = {
