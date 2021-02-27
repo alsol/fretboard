@@ -24,7 +24,7 @@ const uke: Instrument = {
     ]
 }
 
-const guitar: Instrument = {
+export const guitar: Instrument = {
     title: "Guitar",
     tunings: [
         {title: 'standard', strings: GUITAR_TUNINGS.default},

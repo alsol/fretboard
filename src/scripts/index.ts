@@ -90,15 +90,15 @@ function updateFretboard(newState) {
 
     fretboard.style({
         filter: {interval: '1P'},
-        text: () => '1P',
+        text: ({interval}) => interval,
         fill: '#e76f51'
     }).style({
         filter: {interval: '3' + (state.mode == 'Major' ? 'M' : 'm')},
-        text: () => '3' + (state.mode == 'Major' ? 'M' : 'm'),
+        text: ({interval}) => interval,
         fill: "#F29727"
     }).style({
         filter: {interval: "5P"},
-        text: () => '5P',
+        text: ({interval}) => interval,
         fill: '#D89D6A',
     }).style({
         filter: ({interval}) => !majorTriads.has(interval),
