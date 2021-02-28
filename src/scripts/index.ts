@@ -1,12 +1,8 @@
 import {Fretboard} from '@moonwave99/fretboard.js';
 import {instruments} from "./tuning";
+import {modes, modeToElement, notes, range, scaleTypes} from "./config";
 
 require('./fretboard.scss');
-
-const range = n => Array.from({length: n}, (value, key) => key)
-
-const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].filter(note => !note.endsWith("#"))
-const modes = ['Major', 'Minor']
 
 let state = {
     root: notes[0],
@@ -14,12 +10,37 @@ let state = {
     instrument: instruments[0],
     tuning: instruments[0].tunings[0],
     mode: modes[0],
+    scaleType: scaleTypes[0],
     stringWidth: () => range(state.tuning.strings.length)
         .map((v, index) => index > 0 ? v * 0.5 : 0.5)
         .map((v) => v > 2 ? 2 : v)
 }
 
-let fretboard: Fretboard
+function updateMode(newState) {
+    const focused = 'is-focused'
+    const active = 'is-active'
+
+    state = {
+        ...state,
+        ...newState
+    }
+
+    for (const mode of modes) {
+        const modeElement = modeToElement.get(mode)
+        modeElement.classList.remove(focused)
+        modeElement.classList.remove(active)
+    }
+
+    const selectedElement = modeToElement.get(state.mode)
+    selectedElement.classList.add(focused)
+    selectedElement.classList.add(active)
+}
+
+modeToElement.forEach((value: Element, key: string) => {
+    value.addEventListener('click', _ => {
+        updateMode({mode: key})
+    })
+})
 
 let $tuningControl = document.getElementById("tuning-select")
 
@@ -53,6 +74,8 @@ function updateTuningControl(newState) {
     updateFretboard({})
 }
 
+let fretboard: Fretboard
+
 function updateFretboard(newState) {
     state = {
         ...state,
@@ -74,7 +97,7 @@ function updateFretboard(newState) {
 
     fretboard.renderScale({
         root: state.root,
-        type: state.mode.toLowerCase(),
+        type: state.scaleType.toLowerCase(),
     }).style({
         fontSize: 10
     })
@@ -93,7 +116,7 @@ function updateFretboard(newState) {
         text: ({interval}) => interval,
         fill: '#e76f51'
     }).style({
-        filter: {interval: '3' + (state.mode == 'Major' ? 'M' : 'm')},
+        filter: {interval: '3' + (state.scaleType == 'Major' ? 'M' : 'm')},
         text: ({interval}) => interval,
         fill: "#F29727"
     }).style({
@@ -112,7 +135,7 @@ document.getElementById('highlight-triads').addEventListener('change', (ev) => {
 
 const $instrumentControl = document.getElementById("instrument-select")
 const $rootNoteControl = document.getElementById("root-note")
-const $modeControl = document.getElementById("mode")
+const $scaleTypeControl = document.getElementById("scale-type")
 
 $instrumentControl.innerHTML = instruments
     .map((instrument) => {
@@ -141,16 +164,17 @@ $rootNoteControl.addEventListener('change', (ev) => {
     updateFretboard({root: (ev.target as HTMLTextAreaElement).value})
 })
 
-$modeControl.innerHTML = modes
-    .map((mode) => {
+$scaleTypeControl.innerHTML = scaleTypes
+    .map((type) => {
         return `
-        <option value='${mode}' ${mode == state.mode ? 'selected' : ''}>${mode}</option>
+        <option value='${type}' ${type == state.scaleType ? 'selected' : ''}>${type}</option>
         `
     })
     .join('')
 
-$modeControl.addEventListener('change', (ev) => {
-    updateFretboard({mode: (ev.target as HTMLTextAreaElement).value})
+$scaleTypeControl.addEventListener('change', (ev) => {
+    updateFretboard({scaleType: (ev.target as HTMLTextAreaElement).value})
 })
 
+updateMode({})
 updateTuningControl({})
