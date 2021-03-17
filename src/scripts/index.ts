@@ -12,6 +12,7 @@ let state = {
     tuning: instruments[0].tunings[0],
     mode: modes[0],
     scaleType: scaleTypes[0],
+    fretboard: null,
     stringWidth: () => range(state.tuning.strings.length)
         .map((v, index) => index > 0 ? v * 0.5 : 0.5)
         .map((v) => v > 2 ? 2 : v)
@@ -100,19 +101,13 @@ function updateMode(newState) {
     updateFretboard({})
 }
 
-modeToElement.forEach((value: Element, key: string) => {
-    value.addEventListener('click', _ => {
-        updateMode({mode: key})
-    })
-})
-
-let $tuningControl = document.getElementById("tuning-select")
-
 function updateTuningControl(newState) {
     state = {
         ...state,
         ...newState
     }
+
+    let $tuningControl = document.getElementById("tuning-select")
 
     const $clone = $tuningControl.cloneNode(true)
     $tuningControl.parentNode.replaceChild($clone, $tuningControl)
@@ -138,8 +133,6 @@ function updateTuningControl(newState) {
     updateFretboard({})
 }
 
-let fretboard: Fretboard
-
 function updateFretboard(newState) {
     state = {
         ...state,
@@ -148,7 +141,7 @@ function updateFretboard(newState) {
 
     document.getElementById("fretboard").innerHTML = ''
 
-    fretboard = new Fretboard({
+    state.fretboard = new Fretboard({
         el: '#fretboard',
         dotFill: 'white',
         fretCount: 16,
@@ -159,53 +152,60 @@ function updateFretboard(newState) {
         stringWidth: state.stringWidth()
     });
 
-    renderMode(state.mode)(fretboard)
+    renderMode(state.mode)(state.fretboard)
 }
 
-$highlightTriads.addEventListener('change', (ev) => {
-    updateFretboard({highlightTriads: (ev.target as HTMLInputElement).checked})
-})
+const start = () => {
 
-$instrumentControl.innerHTML = instruments
-    .map((instrument) => {
-        const title = instrument.title.toLowerCase()
-        return `
+    modeToElement.forEach((value: Element, key: string) => {
+        value.addEventListener('click', _ => {
+            updateMode({mode: key})
+        })
+    })
+
+    $highlightTriads.addEventListener('change', (ev) => {
+        updateFretboard({highlightTriads: (ev.target as HTMLInputElement).checked})
+    })
+
+    $instrumentControl.innerHTML = instruments
+        .map((instrument) => {
+            const title = instrument.title.toLowerCase()
+            return `
         <option value="${title}" ${state.instrument === instrument ? 'selected' : ''}>${title}</option>
         `
+        })
+        .join('')
+
+    $instrumentControl.addEventListener('change', ev => {
+        const selectedItem = (ev.target as HTMLInputElement).value
+        const selectedInstrument = instruments.find(inst => inst.title.toLowerCase() === selectedItem)
+        updateTuningControl({instrument: selectedInstrument, tuning: selectedInstrument.tunings[0]})
     })
-    .join('')
 
-$instrumentControl.addEventListener('change', ev => {
-    const selectedItem = (ev.target as HTMLInputElement).value
-    const selectedInstrument = instruments.find(inst => inst.title.toLowerCase() === selectedItem)
-    updateTuningControl({instrument: selectedInstrument, tuning: selectedInstrument.tunings[0]})
-})
-
-$rootNoteControl.innerHTML = notes
-    .map((note) => {
-        return `
+    $rootNoteControl.innerHTML = notes
+        .map((note) => {
+            return `
         <option value='${note}' ${note == state.root ? 'selected' : ''}>${note}</option>
         `
+        })
+        .join('')
+
+    $rootNoteControl.addEventListener('change', (ev) => {
+        updateFretboard({root: (ev.target as HTMLTextAreaElement).value})
     })
-    .join('')
 
-$rootNoteControl.addEventListener('change', (ev) => {
-    updateFretboard({root: (ev.target as HTMLTextAreaElement).value})
-})
-
-$scaleTypeControl.innerHTML = scaleTypes
-    .map((type) => {
-        return `
+    $scaleTypeControl.innerHTML = scaleTypes
+        .map((type) => {
+            return `
         <option value='${type}' ${type == state.scaleType ? 'selected' : ''}>${type}</option>
         `
+        })
+        .join('')
+
+    $scaleTypeControl.addEventListener('change', (ev) => {
+        updateFretboard({scaleType: (ev.target as HTMLTextAreaElement).value})
     })
-    .join('')
 
-$scaleTypeControl.addEventListener('change', (ev) => {
-    updateFretboard({scaleType: (ev.target as HTMLTextAreaElement).value})
-})
-
-const start = () => {
     updateMode({})
     updateTuningControl({})
 }
