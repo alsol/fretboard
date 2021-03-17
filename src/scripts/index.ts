@@ -1,6 +1,7 @@
 import {Fretboard} from '@moonwave99/fretboard.js';
 import {instruments} from "./tuning";
-import {modes, modeToElement, notes, range, scaleTypes} from "./config";
+import {Mode, modes, modeToElement, notes, range, scaleTypes} from "./config";
+import {$highlightTriads, $instrumentControl, $rootNoteControl, $scaleTypeControl} from "./elements";
 
 require('./fretboard.scss');
 
@@ -14,6 +15,17 @@ let state = {
     stringWidth: () => range(state.tuning.strings.length)
         .map((v, index) => index > 0 ? v * 0.5 : 0.5)
         .map((v) => v > 2 ? 2 : v)
+}
+
+const configureLayout = (mode: Mode) => {
+    switch (mode) {
+        case "scales":
+            $highlightTriads.classList.remove("is-hidden")
+            break
+        case "chords":
+            $highlightTriads.classList.add("is-hidden")
+            break
+    }
 }
 
 function updateMode(newState) {
@@ -34,6 +46,9 @@ function updateMode(newState) {
     const selectedElement = modeToElement.get(state.mode)
     selectedElement.classList.add(focused)
     selectedElement.classList.add(active)
+
+    configureLayout(state.mode)
+    updateFretboard({})
 }
 
 modeToElement.forEach((value: Element, key: string) => {
@@ -102,7 +117,7 @@ function updateFretboard(newState) {
         fontSize: 10
     })
 
-    if (!state.highlightTriads) {
+    if (state.mode != "scales" || !state.highlightTriads) {
         fretboard.style({
             text: ({note}) => note,
         })
@@ -129,13 +144,9 @@ function updateFretboard(newState) {
     })
 }
 
-document.getElementById('highlight-triads').addEventListener('change', (ev) => {
+$highlightTriads.addEventListener('change', (ev) => {
     updateFretboard({highlightTriads: (ev.target as HTMLInputElement).checked})
 })
-
-const $instrumentControl = document.getElementById("instrument-select")
-const $rootNoteControl = document.getElementById("root-note")
-const $scaleTypeControl = document.getElementById("scale-type")
 
 $instrumentControl.innerHTML = instruments
     .map((instrument) => {
@@ -176,5 +187,9 @@ $scaleTypeControl.addEventListener('change', (ev) => {
     updateFretboard({scaleType: (ev.target as HTMLTextAreaElement).value})
 })
 
-updateMode({})
-updateTuningControl({})
+const start = () => {
+    updateMode({})
+    updateTuningControl({})
+}
+
+start()
