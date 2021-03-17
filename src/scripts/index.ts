@@ -28,6 +28,55 @@ const configureLayout = (mode: Mode) => {
     }
 }
 
+const renderMode = (mode: Mode) => {
+
+    const renderChords = (fretboard: Fretboard) => {
+        fretboard.render()
+    }
+
+    const renderScales = (fretboard: Fretboard) => {
+        fretboard.renderScale({
+            root: state.root,
+            type: state.scaleType.toLowerCase(),
+        }).style({
+            fontSize: 10
+        })
+
+        if (!state.highlightTriads) {
+            fretboard.style({
+                text: ({note}) => note,
+            })
+            return
+        }
+
+        let majorTriads = new Set(['1P', '3M', '3m', '5P'])
+
+        fretboard.style({
+            filter: {interval: '1P'},
+            text: ({interval}) => interval,
+            fill: '#e76f51'
+        }).style({
+            filter: {interval: '3' + (state.scaleType == 'Major' ? 'M' : 'm')},
+            text: ({interval}) => interval,
+            fill: "#F29727"
+        }).style({
+            filter: {interval: "5P"},
+            text: ({interval}) => interval,
+            fill: '#D89D6A',
+        }).style({
+            filter: ({interval}) => !majorTriads.has(interval),
+            opacity: 0.5
+        })
+    }
+
+    switch (mode) {
+        case "chords":
+            return renderChords
+        case "scales":
+            return renderScales
+    }
+}
+
 function updateMode(newState) {
     const focused = 'is-focused'
     const active = 'is-active'
@@ -110,38 +159,7 @@ function updateFretboard(newState) {
         stringWidth: state.stringWidth()
     });
 
-    fretboard.renderScale({
-        root: state.root,
-        type: state.scaleType.toLowerCase(),
-    }).style({
-        fontSize: 10
-    })
-
-    if (state.mode != "scales" || !state.highlightTriads) {
-        fretboard.style({
-            text: ({note}) => note,
-        })
-        return
-    }
-
-    let majorTriads = new Set(['1P', '3M', '3m', '5P'])
-
-    fretboard.style({
-        filter: {interval: '1P'},
-        text: ({interval}) => interval,
-        fill: '#e76f51'
-    }).style({
-        filter: {interval: '3' + (state.scaleType == 'Major' ? 'M' : 'm')},
-        text: ({interval}) => interval,
-        fill: "#F29727"
-    }).style({
-        filter: {interval: "5P"},
-        text: ({interval}) => interval,
-        fill: '#D89D6A',
-    }).style({
-        filter: ({interval}) => !majorTriads.has(interval),
-        opacity: 0.5
-    })
+    renderMode(state.mode)(fretboard)
 }
 
 $highlightTriads.addEventListener('change', (ev) => {
