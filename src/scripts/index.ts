@@ -18,24 +18,22 @@ let state = {
         .map((v) => v > 2 ? 2 : v)
 }
 
-const configureLayout = (mode: Mode) => {
-    switch (mode) {
-        case "scales":
-            $highlightTriads.classList.remove("is-hidden")
-            break
-        case "chords":
-            $highlightTriads.classList.add("is-hidden")
-            break
+interface RenderMode {
+    configureFretboard: (fretboard: Fretboard) => void
+    configureLayout: () => void
+}
+
+const chords: RenderMode = {
+    configureFretboard(fretboard): void {
+        fretboard.render()
+    },
+    configureLayout(): void {
+        $highlightTriads.classList.add("is-hidden")
     }
 }
 
-const renderMode = (mode: Mode) => {
-
-    const renderChords = (fretboard: Fretboard) => {
-        fretboard.render()
-    }
-
-    const renderScales = (fretboard: Fretboard) => {
+const scales: RenderMode = {
+    configureFretboard(fretboard: Fretboard): void {
         fretboard.renderScale({
             root: state.root,
             type: state.scaleType.toLowerCase(),
@@ -68,13 +66,20 @@ const renderMode = (mode: Mode) => {
             filter: ({interval}) => !majorTriads.has(interval),
             opacity: 0.5
         })
+    },
+    configureLayout(): void {
+        $highlightTriads.classList.remove("is-hidden")
     }
+}
 
+const renderMode = (mode: Mode): RenderMode | null => {
     switch (mode) {
         case "chords":
-            return renderChords
+            return chords
         case "scales":
-            return renderScales
+            return scales
+        default:
+            return null
     }
 }
 
@@ -97,7 +102,7 @@ function updateMode(newState) {
     selectedElement.classList.add(focused)
     selectedElement.classList.add(active)
 
-    configureLayout(state.mode)
+    renderMode(state.mode)?.configureLayout()
     updateFretboard({})
 }
 
@@ -152,7 +157,7 @@ function updateFretboard(newState) {
         stringWidth: state.stringWidth()
     });
 
-    renderMode(state.mode)(state.fretboard)
+    renderMode(state.mode)?.configureFretboard(state.fretboard)
 }
 
 const start = () => {
