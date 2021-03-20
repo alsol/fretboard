@@ -1,7 +1,14 @@
-import {Fretboard} from '@moonwave99/fretboard.js';
+import {Fretboard, FretboardSystem} from '@moonwave99/fretboard.js';
 import {instruments} from "./tuning";
 import {Mode, modes, modeToElement, notes, range, scaleTypes} from "./config";
-import {$highlightTriads, $instrumentControl, $rootNoteControl, $scaleTypeControl} from "./elements";
+import {
+    $chordSystemControl,
+    $highlightTriads,
+    $instrumentControl,
+    $rootNoteControl,
+    $scaleTypeControl
+} from "./elements";
+import {Chord, instrumentToChordSystem, renderChord} from "./chords";
 
 require('./fretboard.scss');
 
@@ -12,6 +19,7 @@ let state = {
     tuning: instruments[0].tunings[0],
     mode: modes[0],
     scaleType: scaleTypes[0],
+    chordType: null,
     fretboard: null,
     stringWidth: () => range(state.tuning.strings.length)
         .map((v, index) => index > 0 ? v * 0.5 : 0.5)
@@ -25,10 +33,58 @@ interface RenderMode {
 
 const chords: RenderMode = {
     configureFretboard(fretboard): void {
-        fretboard.render()
+        if (state.chordType == null) {
+            fretboard.render()
+            return
+        }
+
+        const fretboardSystem = new FretboardSystem({
+            tuning: state.tuning.strings,
+            fretCount: 16
+        })
+
+        const chord = renderChord(state.root, state.chordType as Chord, fretboardSystem)
+        console.log(chord)
+        fretboard.renderChord(chord)
+            .style({
+                text: ({note}) => note,
+                fontSize: 10,
+            })
     },
     configureLayout(): void {
         $highlightTriads.classList.add("is-hidden")
+        $chordSystemControl.classList.remove("is-hidden")
+
+        const chordSystem = instrumentToChordSystem.get(state.instrument)
+
+        if (chordSystem == null) {
+            $chordSystemControl.innerHTML = ""
+            return
+        }
+
+        $chordSystemControl.innerHTML = chordSystem.chords
+            .map(chord => {
+                const chordName: string = chord.root.toUpperCase()
+                return `
+                <p class="control">
+                   <button id="${chordName}" class="chord button is-small is-outlined is-light is-${chord.color}">${chordName}</button>
+                </p>
+                `
+            })
+            .join("")
+
+        const $chordSystemButtons = Array.from($chordSystemControl.getElementsByClassName("chord"))
+            .filter(button => button != null)
+
+        for (let $chordButton of $chordSystemButtons) {
+            $chordButton.addEventListener("click", _ => {
+                let chord = chordSystem.chords.find(chord => chord.root == $chordButton.id)
+                $chordSystemButtons.forEach(button => button.classList.remove('is-active'))
+                $chordButton.classList.add('is-active')
+                updateFretboard({chordType: chord})
+            })
+        }
+
     }
 }
 
@@ -69,6 +125,7 @@ const scales: RenderMode = {
     },
     configureLayout(): void {
         $highlightTriads.classList.remove("is-hidden")
+        $chordSystemControl.classList.add("is-hidden")
     }
 }
 
@@ -98,7 +155,14 @@ function updateMode(newState) {
         modeElement.classList.remove(active)
     }
 
+    (modeToElement.get("chords") as HTMLInputElement).disabled = instrumentToChordSystem.get(state.instrument) == null
+
+    if (state.mode == 'chords' && instrumentToChordSystem.get(state.instrument) == null) {
+        state.mode = 'scales'
+    }
+
     const selectedElement = modeToElement.get(state.mode)
+
     selectedElement.classList.add(focused)
     selectedElement.classList.add(active)
 
@@ -184,6 +248,7 @@ const start = () => {
     $instrumentControl.addEventListener('change', ev => {
         const selectedItem = (ev.target as HTMLInputElement).value
         const selectedInstrument = instruments.find(inst => inst.title.toLowerCase() === selectedItem)
+        updateMode({instrument: selectedInstrument})
         updateTuningControl({instrument: selectedInstrument, tuning: selectedInstrument.tunings[0]})
     })
 
