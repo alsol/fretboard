@@ -52,7 +52,7 @@ export const instrumentToChordSystem = new Map<Instrument, ChordSystem>(
     [CAGED].map(chordSystem => [chordSystem.instrument, chordSystem])
 )
 
-export function renderChord(root: string, chord: Chord, type: string, system: FretboardSystem): string[] {
+export function renderChord(root: string, chord: Chord, type: string, system: FretboardSystem): Position[] {
     const rootScale: Position[] = system.getScale({root: root, type: 'major'})
     const maxStrings = Math.max(...rootScale.map(position => position.string))
 
@@ -73,15 +73,15 @@ export function renderChord(root: string, chord: Chord, type: string, system: Fr
     return chordPattern
         .map((value, index) => {
             if (value == 'x') {
-                return value
+                return null
             }
 
             const interval = value == 'R' ? '1' : value
 
             return rootScale.filter(currentStringFilter(index))
                 .filter(position => position.fret > highestRoot - 4)
-                .find(position => position.interval.startsWith(interval))?.fret ?? 'x'
-        }).map(fret => fret as string)
+                .find(position => position.interval.startsWith(interval))
+        }).filter(position => position != null)
 }
 
 

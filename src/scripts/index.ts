@@ -1,4 +1,4 @@
-import {Fretboard, FretboardSystem} from '@moonwave99/fretboard.js';
+import {Fretboard, FretboardSystem, Position} from '@moonwave99/fretboard.js';
 import {instruments} from "./tuning";
 import {Mode, modes, modeToElement, notes, range, scaleTypes} from "./config";
 import {
@@ -26,6 +26,27 @@ let state = {
         .map((v) => v > 2 ? 2 : v)
 }
 
+const highlightMajorTriads = (fretboard: Fretboard) => {
+    let majorTriads = new Set(['1P', '3M', '3m', '5P'])
+
+    fretboard.style({
+        filter: {interval: '1P'},
+        text: ({interval}) => interval,
+        fill: '#e76f51'
+    }).style({
+        filter: {interval: '3' + (state.scaleType == 'Major' ? 'M' : 'm')},
+        text: ({interval}) => interval,
+        fill: "#F29727"
+    }).style({
+        filter: {interval: "5P"},
+        text: ({interval}) => interval,
+        fill: '#D89D6A',
+    }).style({
+        filter: ({interval}) => !majorTriads.has(interval),
+        opacity: 0.5
+    })
+}
+
 interface RenderMode {
     configureFretboard: (fretboard: Fretboard) => void
     configureLayout: () => void
@@ -43,18 +64,22 @@ const chords: RenderMode = {
             fretCount: 16
         })
 
-        const chord = renderChord(state.root, state.chordType as Chord, state.scaleType, fretboardSystem)
-            .join('-')
+        const chord: Position[] = renderChord(state.root, state.chordType as Chord, state.scaleType, fretboardSystem)
 
-        fretboard.renderChord(chord)
-            .style({
+        fretboard.setDots(chord).render()
+
+        if (!state.highlightTriads) {
+            fretboard.style({
                 text: ({note}) => note,
                 fontSize: 10,
                 fill: (state.chordType as Chord).color
             })
+            return;
+        }
+
+        highlightMajorTriads(fretboard)
     },
     configureLayout(): void {
-        $highlightTriads.classList.add("is-hidden")
         $chordSystemControl.classList.remove("is-hidden")
 
         const chordSystem = instrumentToChordSystem.get(state.instrument)
@@ -111,27 +136,9 @@ const scales: RenderMode = {
             return
         }
 
-        let majorTriads = new Set(['1P', '3M', '3m', '5P'])
-
-        fretboard.style({
-            filter: {interval: '1P'},
-            text: ({interval}) => interval,
-            fill: '#e76f51'
-        }).style({
-            filter: {interval: '3' + (state.scaleType == 'Major' ? 'M' : 'm')},
-            text: ({interval}) => interval,
-            fill: "#F29727"
-        }).style({
-            filter: {interval: "5P"},
-            text: ({interval}) => interval,
-            fill: '#D89D6A',
-        }).style({
-            filter: ({interval}) => !majorTriads.has(interval),
-            opacity: 0.5
-        })
+        highlightMajorTriads(fretboard)
     },
     configureLayout(): void {
-        $highlightTriads.classList.remove("is-hidden")
         $chordSystemControl.classList.add("is-hidden")
     }
 }
