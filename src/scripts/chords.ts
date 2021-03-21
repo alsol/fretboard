@@ -16,31 +16,31 @@ export type ChordSystem = {
 const C: Chord = {
     root: 'C',
     pattern: 'xR35R3',
-    color: 'info'
+    color: '#e76f51'
 }
 
 const A: Chord = {
     root: 'A',
     pattern: 'xR5R35',
-    color: 'success'
+    color: '#6a994e'
 }
 
 const G: Chord = {
     root: 'G',
     pattern: 'xx5R5R',
-    color: 'danger'
+    color: '#8338ec'
 }
 
 const E: Chord = {
     root: 'E',
     pattern: 'R5R35R',
-    color: 'warning'
+    color: '#ffbd00'
 }
 
 const D: Chord = {
     root: 'D',
     pattern: 'xxR5R3',
-    color: 'primary'
+    color: '#00bbf9'
 }
 
 const CAGED: ChordSystem = {
@@ -52,11 +52,25 @@ export const instrumentToChordSystem = new Map<Instrument, ChordSystem>(
     [CAGED].map(chordSystem => [chordSystem.instrument, chordSystem])
 )
 
-export function renderChord(root: string, chord: Chord, system: FretboardSystem): string {
-    const rootScale: Position[] = system.getScale({root: chord.root, type: 'major'})
+export function renderChord(root: string, chord: Chord, type: string, system: FretboardSystem): string[] {
+    const rootScale: Position[] = system.getScale({root: root, type: 'major'})
     const maxStrings = Math.max(...rootScale.map(position => position.string))
 
-    return chord.pattern.split('')
+    const chordPattern = chord.pattern.split('')
+
+    const currentStringFilter = (index) => (position: Position) => position.string == (maxStrings - index)
+
+    const highestRoot: number = Math.max(...chordPattern.map((value, index) => {
+        if (value != 'R') {
+            return -1
+        }
+
+        return rootScale.filter(currentStringFilter(index))
+            .filter(position => root == chord.root || position.fret > 0)
+            .find(position => position.interval.startsWith('1P'))?.fret ?? -1
+    }).filter(fret => fret > 0))
+
+    return chordPattern
         .map((value, index) => {
             if (value == 'x') {
                 return value
@@ -64,9 +78,10 @@ export function renderChord(root: string, chord: Chord, system: FretboardSystem)
 
             const interval = value == 'R' ? '1' : value
 
-            return rootScale.filter(position => position.string == (maxStrings - index))
+            return rootScale.filter(currentStringFilter(index))
+                .filter(position => position.fret > highestRoot - 4)
                 .find(position => position.interval.startsWith(interval))?.fret ?? 'x'
-        }).join('')
+        }).map(fret => fret as string)
 }
 
 

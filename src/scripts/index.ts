@@ -43,12 +43,14 @@ const chords: RenderMode = {
             fretCount: 16
         })
 
-        const chord = renderChord(state.root, state.chordType as Chord, fretboardSystem)
-        console.log(chord)
+        const chord = renderChord(state.root, state.chordType as Chord, state.scaleType, fretboardSystem)
+            .join('-')
+
         fretboard.renderChord(chord)
             .style({
                 text: ({note}) => note,
                 fontSize: 10,
+                fill: (state.chordType as Chord).color
             })
     },
     configureLayout(): void {
@@ -67,7 +69,7 @@ const chords: RenderMode = {
                 const chordName: string = chord.root.toUpperCase()
                 return `
                 <p class="control">
-                   <button id="${chordName}" class="chord button is-small is-outlined is-light is-${chord.color}">${chordName}</button>
+                   <button id="${chordName}" class="chord button is-small is-outlined is-primary">${chordName}</button>
                 </p>
                 `
             })
@@ -79,8 +81,12 @@ const chords: RenderMode = {
         for (let $chordButton of $chordSystemButtons) {
             $chordButton.addEventListener("click", _ => {
                 let chord = chordSystem.chords.find(chord => chord.root == $chordButton.id)
-                $chordSystemButtons.forEach(button => button.classList.remove('is-active'))
+                $chordSystemButtons.forEach(button => {
+                    button.classList.remove('is-active')
+                    button.classList.remove('is-focused')
+                })
                 $chordButton.classList.add('is-active')
+                $chordButton.classList.add('is-focused')
                 updateFretboard({chordType: chord})
             })
         }
@@ -248,7 +254,7 @@ const start = () => {
     $instrumentControl.addEventListener('change', ev => {
         const selectedItem = (ev.target as HTMLInputElement).value
         const selectedInstrument = instruments.find(inst => inst.title.toLowerCase() === selectedItem)
-        updateMode({instrument: selectedInstrument})
+        updateMode({chordType: null, instrument: selectedInstrument})
         updateTuningControl({instrument: selectedInstrument, tuning: selectedInstrument.tunings[0]})
     })
 
