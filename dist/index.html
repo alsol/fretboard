@@ -7,46 +7,57 @@
 </head>
 <body>
     <main>
-        <section class="mt-6 container" id="scales">
-            <div class="control">
-                <div class="select is-primary is-small ml-2">
-                    <select id="instrument-select">
-                    </select>
-                </div>
-                <div class="select is-info is-small ml-2">
-                    <select id="tuning-select">
-                    </select>
-                </div>
-            </div>
+        <section class="container mt-6" id="scales">
             <div class="columns is-centered">
-                <figure class="column is-four-fifths" id="fretboard"></figure>
+                <div class="column is-four-fifths">
+                    <div class="control">
+                        <div class="select is-primary is-small ml-2">
+                            <select id="instrument-select">
+                            </select>
+                        </div>
+                        <div class="select is-info is-small ml-2">
+                            <select id="tuning-select">
+                            </select>
+                        </div>
+                    </div>
+                    <figure id="fretboard"></figure>
+                </div>
                 <aside class="column aside form-wrapper">
-                    <form>
-                        <div class="field">
-                            <label for="root-note">Root Note</label>
-                            <div class="control">
-                                <div class="select is-small">
-                                    <select name="root" id="root-note">
-                                    </select>
-                                </div>
+                    <div class="field has-addons">
+                        <p class="control">
+                            <button id="scales-switch" class="button is-small is-link is-outlined is-rounded">Scales</button>
+                        </p>
+                        <p class="control">
+                            <button id="chords-switch" class="button is-small is-primary is-outlined is-rounded">Chords</button>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label for="root-note">Root Note</label>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select name="root" id="root-note">
+                                </select>
                             </div>
                         </div>
-                        <div class="field">
-                            <label for="mode">Mode</label>
-                            <div class="control">
-                                <div class="select is-small">
-                                    <select name="mode" id="mode">
-                                    </select>
-                                </div>
+                    </div>
+                    <div class="field">
+                        <label for="scale-type">Type</label>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select name="scale-type" id="scale-type">
+                                </select>
                             </div>
                         </div>
-                        <div class="field">
-                            <label class="checkbox">
-                                <input type="checkbox" id="highlight-triads">
-                                Highlight major triads
-                            </label>
-                        </div>
-                    </form>
+                    </div>
+                    <div class="field">
+                        <label class="checkbox" id="highlight-triads">
+                            <input type="checkbox">
+                            Highlight major triads
+                        </label>
+                    </div>
+                    <div class="field has-addons" id="chord-system">
+
+                    </div>
                 </aside>
             </div>
         </section>
