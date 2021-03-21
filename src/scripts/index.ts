@@ -67,9 +67,10 @@ const chords: RenderMode = {
         $chordSystemControl.innerHTML = chordSystem.chords
             .map(chord => {
                 const chordName: string = chord.root.toUpperCase()
+                const selectedChord = state.chordType != null && chord === state.chordType
                 return `
                 <p class="control">
-                   <button id="${chordName}" class="chord button is-small is-outlined is-primary">${chordName}</button>
+                   <button id="${chordName}" class="chord button is-small is-outlined is-primary ${selectedChord ? 'is-focused' : ''}">${chordName}</button>
                 </p>
                 `
             })
