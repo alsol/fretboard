@@ -102,7 +102,7 @@ const chords: RenderMode = {
             .join("")
 
         const $chordSystemButtons = Array.from($chordSystemControl.getElementsByClassName("chord"))
-            .filter(button => button != null)
+            .filter(button => button != null) as Element[]
 
         for (let $chordButton of $chordSystemButtons) {
             $chordButton.addEventListener("click", _ => {

@@ -17,7 +17,7 @@ const bass: Instrument = {
     ]
 }
 
-const uke: Instrument = {
+export const uke: Instrument = {
     title: 'Ukulele',
     tunings: [
         {title: 'standard', strings: ['G4','C4','E4','A4']}

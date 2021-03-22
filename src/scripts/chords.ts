@@ -1,5 +1,7 @@
 import {FretboardSystem, Position} from "@moonwave99/fretboard.js";
-import {guitar, Instrument} from "./tuning";
+import {Guitar} from "./chord-systems/caged/guitar"
+import {Instrument} from "./tuning";
+import {ukulele} from "./chord-systems/caged/ukulele";
 
 
 export interface Chord {
@@ -13,47 +15,12 @@ export type ChordSystem = {
     instrument?: Instrument
 }
 
-const C: Chord = {
-    root: 'C',
-    pattern: 'xR35R3',
-    color: '#e76f51'
-}
-
-const A: Chord = {
-    root: 'A',
-    pattern: 'xR5R35',
-    color: '#6a994e'
-}
-
-const G: Chord = {
-    root: 'G',
-    pattern: 'xx5R5R',
-    color: '#8338ec'
-}
-
-const E: Chord = {
-    root: 'E',
-    pattern: 'R5R35R',
-    color: '#ffbd00'
-}
-
-const D: Chord = {
-    root: 'D',
-    pattern: 'xxR5R3',
-    color: '#00bbf9'
-}
-
-const CAGED: ChordSystem = {
-    chords: [C, A, G, E, D],
-    instrument: guitar
-}
-
 export const instrumentToChordSystem = new Map<Instrument, ChordSystem>(
-    [CAGED].map(chordSystem => [chordSystem.instrument, chordSystem])
+    [Guitar, ukulele].map(chordSystem => [chordSystem.instrument, chordSystem])
 )
 
 export function renderChord(root: string, chord: Chord, type: string, system: FretboardSystem): Position[] {
-    const rootScale: Position[] = system.getScale({root: root, type: 'major'})
+    const rootScale: Position[] = system.getScale({root: root, type: type.toLowerCase()})
     const maxStrings = Math.max(...rootScale.map(position => position.string))
 
     const chordPattern = chord.pattern.split('')
