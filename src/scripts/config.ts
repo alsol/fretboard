@@ -1,4 +1,4 @@
-export const range = n => Array.from({length: n}, (value, key) => key)
+export const range = (n: number) => Array.from({length: n}, (value, key) => key)
 
 export const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].filter(note => !note.endsWith("#"))
 export const scaleTypes = ['Major', 'Minor']

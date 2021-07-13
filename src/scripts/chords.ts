@@ -25,7 +25,7 @@ export function renderChord(root: string, chord: Chord, type: string, system: Fr
 
     const chordPattern = chord.pattern.split('')
 
-    const currentStringFilter = (index) => (position: Position) => position.string == (maxStrings - index)
+    const currentStringFilter = (index: number) => (position: Position) => position.string == (maxStrings - index)
 
     const highestRoot: number = Math.max(...chordPattern.map((value, index) => {
         if (value != 'R') {
