@@ -1,4 +1,5 @@
 .idea/*
 node_modules
 *.iml
-dist/**
+dist/*.js*
+dist/css/*
