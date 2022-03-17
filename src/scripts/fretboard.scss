@@ -28,3 +28,16 @@ $body-background-color: $beige-lighter;
 $control-border-width: 2px;
 $input-border-color: transparent;
 $input-shadow: none;
+
+body{
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.content.is-vcentered {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center; /* used this for multiple child */
+    align-items: center; /* if an only child */
+  }

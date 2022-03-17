@@ -20,9 +20,6 @@ module.exports = {
                     },
                     {
                         loader: 'sass-loader',
-                        options: {
-                            sourceMap: true,
-                        }
                     }
                 ]
             }
@@ -31,7 +28,7 @@ module.exports = {
     plugins: [
         new MiniCssExtractPlugin({
             filename: 'css/styles.css'
-        }),
+        })
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
@@ -41,7 +38,9 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
-        contentBase: path.join(__dirname, 'dist'),
+        static: {
+            directory: path.join(__dirname, 'dist'),
+          },
         compress: true,
         port: 9000,
     },
