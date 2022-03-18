@@ -1,11 +1,12 @@
 import {Fretboard, FretboardSystem, Position} from '@moonwave99/fretboard.js';
 import {instruments} from "./tuning";
-import {Mode, modes, modeToElement, notes, range, scaleTypes} from "./config";
+import {Mode, modes, modeToElement, notes, range, scaleTypes, scaleSystems} from "./config";
 import {
     $chordSystemControl,
     $highlightTriads,
     $instrumentControl,
     $rootNoteControl,
+    $scaleSystemControl,
     $scaleTypeControl
 } from "./elements";
 import {Chord, instrumentToChordSystem, renderChord} from "./chords";
@@ -19,6 +20,7 @@ let state = {
     tuning: instruments[0].tunings[0],
     mode: modes[0],
     scaleType: scaleTypes[0],
+    scaleSystem: scaleSystems[0],
     chordType: null,
     fretboard: null,
     stringWidth: () => range(state.tuning.strings.length)
@@ -50,6 +52,7 @@ const highlightMajorTriads = (fretboard: Fretboard) => {
 interface RenderMode {
     configureFretboard: (fretboard: Fretboard) => void
     configureLayout: () => void
+    onExit: () => void 
 }
 
 const chords: RenderMode = {
@@ -116,7 +119,9 @@ const chords: RenderMode = {
                 updateFretboard({chordType: chord})
             })
         }
-
+    },
+    onExit(): void {
+        $chordSystemControl.classList.add("is-hidden")
     }
 }
 
@@ -124,7 +129,7 @@ const scales: RenderMode = {
     configureFretboard(fretboard: Fretboard): void {
         fretboard.renderScale({
             root: state.root,
-            type: state.scaleType.toLowerCase(),
+            type: state.scaleType.toLowerCase() + (state.scaleSystem != "Default" ? " " + state.scaleSystem.toLowerCase() : ""),
         }).style({
             fontSize: 10
         })
@@ -139,7 +144,35 @@ const scales: RenderMode = {
         highlightMajorTriads(fretboard)
     },
     configureLayout(): void {
-        $chordSystemControl.classList.add("is-hidden")
+        $scaleSystemControl.classList.remove("is-hidden")
+
+        $scaleSystemControl.innerHTML = scaleSystems
+        .map(system => {
+            const selectedSystem = state.scaleSystem != null && system === state.scaleSystem
+            return `
+            <p class="control">
+               <button id="${system}" class="scale-system button is-small is-outlined is-link ${selectedSystem ? 'is-focused' : ''}">${system}</button>
+            </p>
+            `
+        })
+        .join("")
+
+    const $scaleSystemButtons = Array.from($scaleSystemControl.getElementsByClassName("scale-system"))
+        .filter(button => button != null) as HTMLInputElement[]
+
+    for (let $systemButton of $scaleSystemButtons) {
+        const tokens = ['is-active', 'is-focused']
+        $systemButton.addEventListener("click", _ => {
+            $scaleSystemButtons.forEach(button => {
+                button.classList.remove(...tokens)
+            })
+            $systemButton.classList.add(...tokens)
+            updateFretboard({scaleSystem: $systemButton.innerText})
+        })
+    }
+    },
+    onExit(): void {
+        $scaleSystemControl.classList.add("is-hidden")
     }
 }
 
@@ -157,6 +190,9 @@ const renderMode = (mode: Mode): RenderMode | null => {
 function updateMode(newState) {
     const focused = 'is-focused'
     const active = 'is-active'
+
+    const currentMode = renderMode(state.mode)
+    currentMode?.onExit()
 
     state = {
         ...state,

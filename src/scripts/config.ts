@@ -2,6 +2,9 @@ export const range = (n: number) => Array.from({length: n}, (value, key) => key)
 
 export const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].filter(note => !note.endsWith("#"))
 export const scaleTypes = ['Major', 'Minor']
+export const scaleSystems: Array<System> = ["Default", "Pentatonic"]
+
+export type System = "Default" | "Pentatonic"
 
 export type Scales = "scales"
 export type Chords = "chords"
