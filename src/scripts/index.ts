@@ -76,10 +76,6 @@ const chords: RenderMode = {
                 text: ({note}) => note,
                 fontSize: 10,
                 fill: (state.chordType as Chord).color
-            }).style({
-                filter: {interval: '1P'},
-                text: ({note}) => note,
-                fill: '#e76f51'
             })
             return;
         }
@@ -141,6 +137,11 @@ const scales: RenderMode = {
         if (!state.highlightTriads) {
             fretboard.style({
                 text: ({note}) => note,
+            })
+            .style({
+                filter: {interval: '1P'},
+                text: ({note}) => note,
+                fill: '#e76f51'
             })
             return
         }
